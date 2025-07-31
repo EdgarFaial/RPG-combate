@@ -48,12 +48,24 @@
     border-radius: 10px;
     overflow: hidden;
     margin: 5px 0;
+    position: relative;
   }
   .vida-atual {
     background: #4caf50;
     height: 100%;
     width: 100%;
     transition: width 0.3s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .vida-texto {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    line-height: 20px;
   }
   #log {
     background-color: #1e1e1e;
@@ -85,6 +97,42 @@
     margin-top: 6px;
     color: #f7d794;
   }
+  .dialogo-habilidade {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #2e2e2e;
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 100;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    width: 300px;
+  }
+  .dialogo-habilidade select {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .dialogo-habilidade button {
+    margin-right: 5px;
+  }
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+  .ambiente-select {
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 6px;
+    background: #3a3a3a;
+    color: #eee;
+    border: none;
+  }
 </style>
 </head>
 <body>
@@ -98,6 +146,17 @@
 
     <label for="selPlayer2">Jogador 2:</label>
     <select id="selPlayer2"></select>
+    
+    <label for="selAmbiente">Ambiente:</label>
+    <select id="selAmbiente" class="ambiente-select">
+      <option value="neutro">Neutro</option>
+      <option value="fogo">Fogo</option>
+      <option value="agua">Água</option>
+      <option value="floresta">Floresta</option>
+      <option value="montanha">Montanha</option>
+      <option value="magico">Mágico</option>
+      <option value="tecnologico">Tecnológico</option>
+    </select>
   </div>
 
   <div>
@@ -105,7 +164,6 @@
     <button id="btnTurno" disabled>Próximo Turno</button>
     <button id="btnUsarHabilidade" disabled>Usar Habilidade</button>
     <button id="btnUsarItem" disabled>Usar Item</button>
-    <button id="btnRoubarItem" disabled>Roubar Item</button>
     <button id="btnReiniciar" disabled>Reiniciar</button>
   </div>
 
@@ -114,7 +172,10 @@
       <h2>Jogador 1</h2>
       <div><b>Nome:</b> <span id="nomePlayer1">-</span></div>
       <div><b>Vida:</b> <span id="vidaNum1">-</span></div>
-      <div class="vida-bar"><div id="vidaBar1" class="vida-atual"></div></div>
+      <div class="vida-bar">
+        <div id="vidaBar1" class="vida-atual"></div>
+        <div class="vida-texto" id="vidaTexto1"></div>
+      </div>
       <div class="atributos" id="atributos1"></div>
       <div class="status-list" id="status1"></div>
       <div class="inventario-list" id="inventario1"></div>
@@ -124,7 +185,10 @@
       <h2>Jogador 2</h2>
       <div><b>Nome:</b> <span id="nomePlayer2">-</span></div>
       <div><b>Vida:</b> <span id="vidaNum2">-</span></div>
-      <div class="vida-bar"><div id="vidaBar2" class="vida-atual"></div></div>
+      <div class="vida-bar">
+        <div id="vidaBar2" class="vida-atual"></div>
+        <div class="vida-texto" id="vidaTexto2"></div>
+      </div>
       <div class="atributos" id="atributos2"></div>
       <div class="status-list" id="status2"></div>
       <div class="inventario-list" id="inventario2"></div>
@@ -145,7 +209,7 @@
       atributosBase: { forca: 3, velocidade: 8, inteligencia: 4, determinacao: 0, resistencia: 1 },
       habilidades: {
         frenesiEsquivas: { nome: "Frenesi de Esquivas", passiva: true, esquivasConsecutivas: 0, bonusVelocidade: 0 },
-        arrastao: { nome: "Arrastão", cooldown: 0, usos: 2 }
+        arrastao: { nome: "Arrastão", cooldown: 0, usos: 2, maxUsos: 2 }
       },
       inventario: [
         { nome: "Rapieira Nobre", tipo: "arma", descricao: "Escala com velocidade (+força = velocidade/3)." }
@@ -161,7 +225,7 @@
         tecelaoCarcacas: { nome: "Tecelão de Carcaças", cooldown: 0, usado: false }
       },
       inventario: [
-        { nome: "Catalisador", tipo: "item", descricao: "Escudo especial após 2 turnos de inatividade." }
+        { nome: "Catalisador", tipo: "item", descricao: "Escudo especial após 2 turnos de inatividade.", preparando: 0 }
       ]
     },
     samuw: {
@@ -170,11 +234,11 @@
       classe: "guerreiroMago",
       atributosBase: { forca: 8, velocidade: 5, inteligencia: 0, determinacao: 5, resistencia: 5 },
       habilidades: {
-        palmaSanta: { nome: "Palma Santa", cooldown: 0, usos: 3 },
+        palmaSanta: { nome: "Palma Santa", cooldown: 0, usos: 3, maxUsos: 3 },
         kingMonkey: { nome: "King Monkey", cooldown: 0, ativo: false, duracao: 0 }
       },
       inventario: [
-        { nome: "Luvas Solares", tipo: "arma", descricao: "+2 força, acumula dano" }
+        { nome: "Luvas Solares", tipo: "arma", descricao: "+2 força, acumula dano", cooldown: 0, danoAcumulado: 0 }
       ]
     },
     lior: {
@@ -183,24 +247,24 @@
       classe: "tecnomago",
       atributosBase: { forca: 0, velocidade: 0, inteligencia: 7, determinacao: 7, resistencia: 1 },
       habilidades: {
-        criarArtefatos: { nome: "Criar Artefatos", cooldown: 0, usos: 2 },
+        criarArtefatos: { nome: "Criar Artefatos", cooldown: 0, usos: 2, maxUsos: 2 },
         usarForcaMagica: { nome: "Usar Força Mágica", cooldown: 0, ativo: false, duracao: 0 }
       },
       inventario: [
-        { nome: "Manopla Etherflux", tipo: "artefato", descricao: "Canalizador e interface tecnológica." }
+        { nome: "Manopla Etherflux", tipo: "artefato", descricao: "Canalizador e interface tecnológica.", preparada: true }
       ]
     },
     adam: {
       nome: "Adam",
       raca: "aerolino",
       classe: "ladino",
-      atributosBase: { forca: 3, velocidade: 8, inteligencia: 2, determinacao: 3, resistencia: 4 },
+      atributosBase: { forca: 4, velocidade: 1, inteligencia: 2, determinacao: 2, resistencia: 6 },
       habilidades: {
         sentirPresenca: { nome: "Sentir Presença", passiva: true },
-        invisibilidade: { nome: "Invisibilidade", cooldown: 0, duracao: 0, usos: 1 }
+        invisibilidade: { nome: "Invisibilidade", cooldown: 0, duracao: 0, usos: 1, maxUsos: 1 }
       },
       inventario: [
-        { nome: "Adagas Duplas", tipo: "arma", descricao: "Ataques furtivos + veneno" }
+        { nome: "Adagas Duplas", tipo: "arma", descricao: "Ataques furtivos + veneno", venenoUsado: false }
       ]
     }
   };
@@ -224,21 +288,62 @@
     tecnomago: { inteligencia: 2, determinacao: 2 }
   };
 
-  // Ambiente (exemplo básico - pode expandir)
-  let ambienteAtual = "fogo"; // afeta malgorr e lior por exemplo
+  // Ambientes e seus efeitos
+  const ambientes = {
+    neutro: { nome: "Neutro", bonus: {} },
+    fogo: { 
+      nome: "Fogo", 
+      bonus: { 
+        mago: { determinacao: 2 },
+        tecnomago: { inteligencia: 1 }
+      } 
+    },
+    agua: { 
+      nome: "Água", 
+      bonus: { 
+        mago: { determinacao: 1 },
+        tecnomago: { inteligencia: -1 }
+      } 
+    },
+    floresta: { 
+      nome: "Floresta", 
+      bonus: { 
+        ladino: { velocidade: 1 },
+        guerreiro: { forca: 1 }
+      } 
+    },
+    montanha: { 
+      nome: "Montanha", 
+      bonus: { 
+        terroso: { resistencia: 1 },
+        guerreiro: { forca: 1 }
+      } 
+    },
+    magico: { 
+      nome: "Mágico", 
+      bonus: { 
+        mago: { determinacao: 3 },
+        tecnomago: { inteligencia: 3 }
+      } 
+    },
+    tecnologico: { 
+      nome: "Tecnológico", 
+      bonus: { 
+        tecnomago: { inteligencia: 2 },
+        mago: { determinacao: -1 }
+      } 
+    }
+  };
 
-  // Estado dos jogadores em combate
+  // Estado do jogo
+  let ambienteAtual = "neutro";
   let estadoJogador = {
     player1: null,
     player2: null
   };
-
   let turno = 0;
   let combateAtivo = false;
-  let esquivasConsecutivasMu = {
-    player1: 0,
-    player2: 0
-  };
+  let dialogoHabilidadeAberto = false;
 
   // Auxiliares de dados
   function rolarDado(lados) {
@@ -294,26 +399,52 @@
     };
   }
 
+  // Aplica bônus do ambiente
+  function aplicarBonusAmbiente(jogador) {
+    const ambiente = ambientes[ambienteAtual];
+    if (!ambiente || !ambiente.bonus) return;
+    
+    const bonus = ambiente.bonus[jogador.classe.toLowerCase()] || {};
+    for (const attr in bonus) {
+      jogador.atributos[attr] += bonus[attr];
+    }
+  }
+
   // Atualiza a interface de um jogador
   function atualizarInterface() {
     ["player1", "player2"].forEach((key, idx) => {
       const p = estadoJogador[key];
       if (!p) {
-        document.getElementById("nomePlayer" + (idx + 1)).innerText = "-";
-        document.getElementById("vidaNum" + (idx + 1)).innerText = "-";
-        document.getElementById("vidaBar" + (idx + 1)).style.width = "0%";
-        document.getElementById("atributos" + (idx + 1)).innerText = "";
-        document.getElementById("status" + (idx + 1)).innerText = "";
-        document.getElementById("inventario" + (idx + 1)).innerText = "";
+        document.getElementById(`nomePlayer${idx + 1}`).innerText = "-";
+        document.getElementById(`vidaNum${idx + 1}`).innerText = "-";
+        document.getElementById(`vidaBar${idx + 1}`).style.width = "0%";
+        document.getElementById(`vidaTexto${idx + 1}`).innerText = "";
+        document.getElementById(`atributos${idx + 1}`).innerText = "";
+        document.getElementById(`status${idx + 1}`).innerText = "";
+        document.getElementById(`inventario${idx + 1}`).innerText = "";
         return;
       }
-      document.getElementById("nomePlayer" + (idx + 1)).innerText = p.nome;
-      document.getElementById("vidaNum" + (idx + 1)).innerText = p.vida > 0 ? p.vida : 0;
-      const percVida = (p.vida / p.vidaMax) * 100;
-      document.getElementById("vidaBar" + (idx + 1)).style.width = percVida + "%";
+      
+      const num = idx + 1;
+      document.getElementById(`nomePlayer${num}`).innerText = p.nome;
+      const vidaAtual = p.vida > 0 ? p.vida : 0;
+      document.getElementById(`vidaNum${num}`).innerText = vidaAtual;
+      const percVida = (vidaAtual / p.vidaMax) * 100;
+      document.getElementById(`vidaBar${num}`).style.width = percVida + "%";
+      document.getElementById(`vidaTexto${num}`).innerText = `${vidaAtual}/${p.vidaMax}`;
+
+      // Cor da barra de vida baseada na porcentagem
+      const vidaBar = document.getElementById(`vidaBar${num}`);
+      if (percVida > 60) {
+        vidaBar.style.backgroundColor = "#4caf50"; // Verde
+      } else if (percVida > 30) {
+        vidaBar.style.backgroundColor = "#ff9800"; // Laranja
+      } else {
+        vidaBar.style.backgroundColor = "#f44336"; // Vermelho
+      }
 
       const attr = p.atributos;
-      document.getElementById("atributos" + (idx + 1)).innerHTML = `
+      document.getElementById(`atributos${num}`).innerHTML = `
         <b>Atributos:</b> Força: ${attr.forca}, Velocidade: ${attr.velocidade}, Inteligência: ${attr.inteligencia}, Determinação: ${attr.determinacao}, Resistência: ${attr.resistencia}
       `;
 
@@ -323,14 +454,37 @@
       else {
         statusTxt += p.status.map(s => `${s.nome} (${s.turnosRestantes} turnos)`).join(", ");
       }
-      document.getElementById("status" + (idx + 1)).innerText = statusTxt;
+      document.getElementById(`status${num}`).innerText = statusTxt;
 
       // Inventário
-      if (p.inventario.length === 0) document.getElementById("inventario" + (idx + 1)).innerText = "Inventário vazio";
-      else {
-        document.getElementById("inventario" + (idx + 1)).innerText =
-          "Inventário: " + p.inventario.map(i => i.nome).join(", ");
+      if (p.inventario.length === 0) {
+        document.getElementById(`inventario${num}`).innerText = "Inventário vazio";
+      } else {
+        document.getElementById(`inventario${num}`).innerText =
+          "Inventário: " + p.inventario.map(i => {
+            let extra = "";
+            if (i.usos !== undefined) extra = ` (${i.usos}/${i.maxUsos})`;
+            if (i.cooldown !== undefined && i.cooldown > 0) extra = ` (CD: ${i.cooldown})`;
+            return i.nome + extra;
+          }).join(", ");
       }
+
+      // Habilidades (mostra usos/cooldown)
+      const habilidadesDiv = document.createElement("div");
+      habilidadesDiv.className = "habilidades-list";
+      habilidadesDiv.innerHTML = "<b>Habilidades:</b> " + 
+        Object.values(p.habilidades).map(h => {
+          if (h.passiva) return `${h.nome} (Passiva)`;
+          let extra = "";
+          if (h.usos !== undefined) extra = ` (${h.usos}/${h.maxUsos})`;
+          if (h.cooldown > 0) extra = ` (CD: ${h.cooldown})`;
+          if (h.ativo) extra = " (Ativo)";
+          return h.nome + extra;
+        }).join(", ");
+      
+      const oldHabilidades = document.querySelector(`#boxPlayer${num} .habilidades-list`);
+      if (oldHabilidades) oldHabilidades.remove();
+      document.getElementById(`boxPlayer${num}`).appendChild(habilidadesDiv);
     });
   }
 
@@ -345,12 +499,13 @@
   function processarStatus(p) {
     let log = "";
 
-    // Exemplo: Envenenamento causa 5 de dano por turno
+    // Processa status do personagem
     let statusParaRemover = [];
     for (const st of p.status) {
       if (st.nome === "Envenenado") {
-        p.vida -= 5;
-        log += `${p.nome} sofre 5 de dano por envenenamento.\n`;
+        const dano = 5;
+        p.vida -= dano;
+        log += `${p.nome} sofre ${dano} de dano por envenenamento.\n`;
         st.turnosRestantes--;
         if (st.turnosRestantes <= 0) statusParaRemover.push(st);
       }
@@ -369,16 +524,53 @@
           p.atributos.resistencia -= 3;
           p.atributos.velocidade += 2;
           statusParaRemover.push(st);
+          p.habilidades.kingMonkey.ativo = false;
           log += `${p.nome} voltou à forma normal após King Monkey.\n`;
         }
       }
       else if (st.nome === "Usar Força Mágica") {
         st.turnosRestantes--;
         if (st.turnosRestantes <= 0) {
-          p.atributos.inteligencia -= 3;
+          p.atributos.inteligencia -= p.habilidades.usarForcaMagica.bonus;
           statusParaRemover.push(st);
+          p.habilidades.usarForcaMagica.ativo = false;
           log += `${p.nome} perdeu o bônus de Força Mágica.\n`;
         }
+      }
+      else if (st.nome === "Preparando Catalisador") {
+        st.turnosRestantes--;
+        if (st.turnosRestantes <= 0) {
+          statusParaRemover.push(st);
+          p.status.push({ nome: "Escudo Ativo", turnosRestantes: 3 });
+          log += `${p.nome} ativou o escudo do Catalisador por 3 turnos!\n`;
+        } else {
+          log += `${p.nome} está preparando o Catalisador (${st.turnosRestantes} turnos restantes).\n`;
+        }
+      }
+      else if (st.nome === "Escudo Ativo") {
+        st.turnosRestantes--;
+        if (st.turnosRestantes <= 0) {
+          statusParaRemover.push(st);
+          log += `${p.nome} perdeu o escudo do Catalisador.\n`;
+        }
+      }
+      else if (st.nome === "Dano Acumulado") {
+        // Luvas Solares - libera o dano acumulado
+        const luvas = p.inventario.find(i => i.nome === "Luvas Solares");
+        if (luvas && luvas.danoAcumulado > 0) {
+          const dano = luvas.danoAcumulado;
+          luvas.danoAcumulado = 0;
+          log += `${p.nome} liberou ${dano} de dano acumulado das Luvas Solares!\n`;
+          // Encontra o inimigo
+          const inimigoKey = p === estadoJogador.player1 ? "player2" : "player1";
+          const inimigo = estadoJogador[inimigoKey];
+          if (inimigo && inimigo.vida > 0) {
+            inimigo.vida -= dano;
+            if (inimigo.vida < 0) inimigo.vida = 0;
+            log += `${inimigo.nome} sofreu ${dano} de dano!\n`;
+          }
+        }
+        statusParaRemover.push(st);
       }
       else {
         // Outras condições aqui
@@ -389,17 +581,389 @@
 
     // Remove status expirados
     p.status = p.status.filter(s => !statusParaRemover.includes(s));
+    
+    // Processa cooldowns de itens
+    for (const item of p.inventario) {
+      if (item.cooldown && item.cooldown > 0) {
+        item.cooldown--;
+      }
+    }
+    
+    // Processa cooldowns de habilidades
+    for (const hab of Object.values(p.habilidades)) {
+      if (hab.cooldown && hab.cooldown > 0) {
+        hab.cooldown--;
+      }
+    }
+    
     return log;
   }
 
-  // Aplica efeito de invisibilidade (exemplo)
-  function estaInvisivel(p) {
-    return p.status.some(s => s.nome === "Invisibilidade");
+  // Verifica se um personagem tem escudo ativo
+  function temEscudo(p) {
+    return p.status.some(s => s.nome === "Escudo Ativo");
   }
 
   // Verifica se um personagem é Mu
   function ehMu(p) {
     return p && p.nome === "Mu";
+  }
+
+  // Verifica se um personagem está invisível
+  function estaInvisivel(p) {
+    return p.status.some(s => s.nome === "Invisibilidade");
+  }
+
+  // Mostra diálogo para selecionar habilidade
+  function mostrarDialogoHabilidades(jogador) {
+    if (dialogoHabilidadeAberto) return;
+    dialogoHabilidadeAberto = true;
+    
+    const dialog = document.createElement("div");
+    dialog.className = "dialogo-habilidade";
+    
+    const overlay = document.createElement("div");
+    overlay.className = "overlay";
+    
+    const titulo = document.createElement("h3");
+    titulo.innerText = `${jogador.nome} - Escolha uma habilidade`;
+    dialog.appendChild(titulo);
+    
+    const select = document.createElement("select");
+    select.id = "selectHabilidade";
+    
+    // Filtra apenas habilidades ativas (não passivas)
+    const habilidadesAtivas = Object.values(jogador.habilidades).filter(h => !h.passiva);
+    
+    if (habilidadesAtivas.length === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.text = "Nenhuma habilidade disponível";
+      select.appendChild(option);
+      select.disabled = true;
+    } else {
+      habilidadesAtivas.forEach(h => {
+        let disponivel = true;
+        let motivo = "";
+        
+        if (h.usos !== undefined && h.usos <= 0) {
+          disponivel = false;
+          motivo = " (Sem usos)";
+        } else if (h.cooldown > 0) {
+          disponivel = false;
+          motivo = ` (CD: ${h.cooldown})`;
+        } else if (h.ativo) {
+          disponivel = false;
+          motivo = " (Ativo)";
+        }
+        
+        const option = document.createElement("option");
+        option.value = h.nome;
+        option.text = h.nome + motivo;
+        option.disabled = !disponivel;
+        select.appendChild(option);
+      });
+    }
+    
+    dialog.appendChild(select);
+    
+    const botoesDiv = document.createElement("div");
+    botoesDiv.style.marginTop = "10px";
+    
+    const btnUsar = document.createElement("button");
+    btnUsar.innerText = "Usar";
+    btnUsar.onclick = () => {
+      const habNome = select.value;
+      if (habNome) {
+        usarHabilidadeSelecionada(jogador, habNome);
+      }
+      fecharDialogo();
+    };
+    
+    const btnCancelar = document.createElement("button");
+    btnCancelar.innerText = "Cancelar";
+    btnCancelar.onclick = fecharDialogo;
+    
+    botoesDiv.appendChild(btnUsar);
+    botoesDiv.appendChild(btnCancelar);
+    dialog.appendChild(botoesDiv);
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(dialog);
+    
+    function fecharDialogo() {
+      document.body.removeChild(overlay);
+      document.body.removeChild(dialog);
+      dialogoHabilidadeAberto = false;
+    }
+  }
+
+  // Usa a habilidade selecionada no diálogo
+  function usarHabilidadeSelecionada(jogador, habNome) {
+    const habKey = Object.keys(jogador.habilidades).find(k => jogador.habilidades[k].nome === habNome);
+    if (!habKey) return;
+    
+    const hab = jogador.habilidades[habKey];
+    let log = "";
+    
+    switch (habKey) {
+      case "arrastao":
+        if (hab.usos <= 0) {
+          logTexto(`${jogador.nome} não tem mais usos de Arrastão.`);
+          return;
+        }
+        
+        const defensorKey = jogador === estadoJogador.player1 ? "player2" : "player1";
+        const defensor = estadoJogador[defensorKey];
+        
+        if (!defensor || defensor.inventario.length === 0) {
+          logTexto(`${jogador.nome} tentou roubar, mas ${defensor ? defensor.nome : "o adversário"} não tem itens.`);
+          return;
+        }
+        
+        const dado = rolarDado(20);
+        logTexto(`${jogador.nome} tenta Arrastão: d20(${dado})`);
+        
+        if (dado >= 11) {
+          const item = defensor.inventario.shift();
+          jogador.inventario.push(item);
+          hab.usos--;
+          logTexto(`${jogador.nome} roubou o item ${item.nome} de ${defensor.nome}!`);
+        } else {
+          hab.usos--;
+          logTexto(`${jogador.nome} falhou no Arrastão!`);
+        }
+        break;
+        
+      case "invisibilidade":
+        if (estaInvisivel(jogador)) {
+          logTexto(`${jogador.nome} já está invisível.`);
+          return;
+        }
+        jogador.status.push({ nome: "Invisibilidade", turnosRestantes: 1 });
+        hab.usos--;
+        log = `${jogador.nome} ativou Invisibilidade por 1 turno!`;
+        break;
+        
+      case "vantagemElemental":
+        if (hab.ativo) {
+          logTexto(`${jogador.nome} já está com Vantagem Elemental ativa.`);
+          return;
+        }
+        hab.ativo = true;
+        jogador.atributos.velocidade += 2;
+        log = `${jogador.nome} ativou Vantagem Elemental! +2 de dano e +2 de velocidade em ambiente ${ambienteAtual}.`;
+        break;
+        
+      case "palmaSanta":
+        if (hab.usos <= 0) {
+          logTexto(`${jogador.nome} não tem mais usos de Palma Santa.`);
+          return;
+        }
+        const cura = Math.floor(jogador.vidaMax * 0.5);
+        jogador.vida += cura;
+        if (jogador.vida > jogador.vidaMax) jogador.vida = jogador.vidaMax;
+        hab.usos--;
+        log = `${jogador.nome} usou Palma Santa e recuperou ${cura} de vida.`;
+        break;
+        
+      case "kingMonkey":
+        if (hab.ativo) {
+          logTexto(`${jogador.nome} já está em forma de King Monkey.`);
+          return;
+        }
+        hab.ativo = true;
+        hab.duracao = 2;
+        jogador.atributos.forca += 3;
+        jogador.atributos.resistencia += 3;
+        jogador.atributos.velocidade -= 2;
+        jogador.status.push({ nome: "King Monkey", turnosRestantes: 2 });
+        log = `${jogador.nome} se transformou em King Monkey! +3 força, +3 resistência, -2 velocidade por 2 turnos.`;
+        break;
+        
+      case "usarForcaMagica":
+        if (hab.ativo) {
+          logTexto(`${jogador.nome} já está usando Força Mágica.`);
+          return;
+        }
+        hab.ativo = true;
+        hab.duracao = 3;
+        // Define bônus baseado no ambiente
+        if (ambienteAtual === "magico") {
+          hab.bonus = 3;
+          log = `${jogador.nome} ativou Usar Força Mágica! +3 inteligência por 3 turnos (ambiente mágico).`;
+        } else {
+          hab.bonus = 1;
+          log = `${jogador.nome} ativou Usar Força Mágica! +1 inteligência por 3 turnos.`;
+        }
+        jogador.atributos.inteligencia += hab.bonus;
+        jogador.status.push({ nome: "Usar Força Mágica", turnosRestantes: 3 });
+        break;
+        
+      default:
+        log = `${jogador.nome} usou ${hab.nome}, mas o efeito não está implementado.`;
+        break;
+    }
+    
+    if (log) logTexto(log);
+    atualizarInterface();
+  }
+
+  // Mostra diálogo para selecionar item
+  function mostrarDialogoItens(jogador) {
+    if (dialogoHabilidadeAberto) return;
+    dialogoHabilidadeAberto = true;
+    
+    const dialog = document.createElement("div");
+    dialog.className = "dialogo-habilidade";
+    
+    const overlay = document.createElement("div");
+    overlay.className = "overlay";
+    
+    const titulo = document.createElement("h3");
+    titulo.innerText = `${jogador.nome} - Escolha um item`;
+    dialog.appendChild(titulo);
+    
+    const select = document.createElement("select");
+    select.id = "selectItem";
+    
+    if (jogador.inventario.length === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.text = "Inventário vazio";
+      select.appendChild(option);
+      select.disabled = true;
+    } else {
+      jogador.inventario.forEach((item, index) => {
+        let disponivel = true;
+        let motivo = "";
+        
+        if (item.cooldown && item.cooldown > 0) {
+          disponivel = false;
+          motivo = ` (CD: ${item.cooldown})`;
+        }
+        
+        const option = document.createElement("option");
+        option.value = index;
+        option.text = item.nome + motivo;
+        option.disabled = !disponivel;
+        select.appendChild(option);
+      });
+    }
+    
+    dialog.appendChild(select);
+    
+    const botoesDiv = document.createElement("div");
+    botoesDiv.style.marginTop = "10px";
+    
+    const btnUsar = document.createElement("button");
+    btnUsar.innerText = "Usar";
+    btnUsar.onclick = () => {
+      const itemIndex = parseInt(select.value);
+      if (!isNaN(itemIndex)) {
+        usarItemSelecionado(jogador, itemIndex);
+      }
+      fecharDialogo();
+    };
+    
+    const btnCancelar = document.createElement("button");
+    btnCancelar.innerText = "Cancelar";
+    btnCancelar.onclick = fecharDialogo;
+    
+    botoesDiv.appendChild(btnUsar);
+    botoesDiv.appendChild(btnCancelar);
+    dialog.appendChild(botoesDiv);
+    
+    const descricaoDiv = document.createElement("div");
+    descricaoDiv.style.marginTop = "10px";
+    descricaoDiv.style.fontSize = "12px";
+    descricaoDiv.id = "itemDescricao";
+    dialog.appendChild(descricaoDiv);
+    
+    // Atualiza descrição quando muda o item selecionado
+    select.onchange = () => {
+      const itemIndex = parseInt(select.value);
+      if (!isNaN(itemIndex) && jogador.inventario[itemIndex]) {
+        descricaoDiv.innerText = jogador.inventario[itemIndex].descricao;
+      } else {
+        descricaoDiv.innerText = "";
+      }
+    };
+    
+    // Mostra descrição do primeiro item
+    if (jogador.inventario.length > 0) {
+      descricaoDiv.innerText = jogador.inventario[0].descricao;
+    }
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(dialog);
+    
+    function fecharDialogo() {
+      document.body.removeChild(overlay);
+      document.body.removeChild(dialog);
+      dialogoHabilidadeAberto = false;
+    }
+  }
+
+  // Usa o item selecionado no diálogo
+  function usarItemSelecionado(jogador, itemIndex) {
+    if (itemIndex < 0 || itemIndex >= jogador.inventario.length) return;
+    
+    const item = jogador.inventario[itemIndex];
+    let log = "";
+    
+    switch (item.nome) {
+      case "Catalisador":
+        if (item.preparando) {
+          logTexto(`${jogador.nome} já está preparando o Catalisador.`);
+          return;
+        }
+        item.preparando = true;
+        jogador.status.push({ nome: "Preparando Catalisador", turnosRestantes: 2 });
+        log = `${jogador.nome} começou a preparar o Catalisador. Escudo será ativado em 2 turnos.`;
+        break;
+        
+      case "Luvas Solares":
+        if (item.cooldown > 0) {
+          logTexto(`${jogador.nome} não pode usar as Luvas Solares ainda (CD: ${item.cooldown}).`);
+          return;
+        }
+        if (item.danoAcumulado > 0) {
+          // Libera o dano acumulado
+          jogador.status.push({ nome: "Dano Acumulado", turnosRestantes: 1 });
+          log = `${jogador.nome} prepara-se para liberar ${item.danoAcumulado} de dano acumulado!`;
+        } else {
+          item.cooldown = 5;
+          log = `${jogador.nome} ativou as Luvas Solares! Agora acumulará dano recebido.`;
+        }
+        break;
+        
+      case "Manopla Etherflux":
+        if (!item.preparada) {
+          logTexto(`${jogador.nome} precisa preparar a Manopla Etherflux primeiro.`);
+          return;
+        }
+        // Implementar funcionalidades específicas da manopla
+        log = `${jogador.nome} usou a Manopla Etherflux!`;
+        // Pode adicionar efeitos específicos aqui
+        break;
+        
+      case "Adagas Duplas":
+        if (item.venenoUsado) {
+          logTexto(`${jogador.nome} já usou o veneno das Adagas Duplas nesta batalha.`);
+          return;
+        }
+        // O veneno é aplicado no ataque, não diretamente aqui
+        log = `${jogador.nome} preparou o veneno das Adagas Duplas para o próximo ataque!`;
+        break;
+        
+      default:
+        log = `${jogador.nome} usou ${item.nome}, mas o efeito não está implementado.`;
+        break;
+    }
+    
+    if (log) logTexto(log);
+    atualizarInterface();
   }
 
   // Função principal para realizar um turno de ataque
@@ -424,17 +988,23 @@
     if (logStatusAtacante) logTexto(logStatusAtacante);
     if (logStatusDefensor) logTexto(logStatusDefensor);
 
+    // Verifica Tecelão de Carcaças (Malgorr) se estiver morto
+    if (atacante.vida <= 0 && atacante.nome === "Malgorr" && !atacante.habilidades.tecelaoCarcacas.usado && defensor.vida <= 0) {
+      logTexto(`${atacante.nome} ativa Tecelão de Carcaças!`);
+      atacante.vida = Math.floor(atacante.vidaMax * 0.5);
+      atacante.habilidades.tecelaoCarcacas.usado = true;
+      logTexto(`${atacante.nome} ressuscitou com 50% de vida!`);
+    }
+    
+    if (defensor.vida <= 0 && defensor.nome === "Malgorr" && !defensor.habilidades.tecelaoCarcacas.usado && atacante.vida <= 0) {
+      logTexto(`${defensor.nome} ativa Tecelão de Carcaças!`);
+      defensor.vida = Math.floor(defensor.vidaMax * 0.5);
+      defensor.habilidades.tecelaoCarcacas.usado = true;
+      logTexto(`${defensor.nome} ressuscitou com 50% de vida!`);
+    }
+
     if (atacante.vida <= 0) {
       logTexto(`${atacante.nome} está incapacitado e não pode atacar.`);
-      
-      // Verifica Tecelão de Carcaças (Malgorr)
-      if (atacante.nome === "Malgorr" && !atacante.habilidades.tecelaoCarcacas.usado && defensor.vida <= 0) {
-        logTexto(`${atacante.nome} ativa Tecelão de Carcaças!`);
-        atacante.vida = Math.floor(atacante.vidaMax * 0.5);
-        atacante.habilidades.tecelaoCarcacas.usado = true;
-        logTexto(`${atacante.nome} ressuscitou com 50% de vida!`);
-      }
-      
       turno++;
       atualizarInterface();
       checarVencedor();
@@ -442,15 +1012,6 @@
     }
     if (defensor.vida <= 0) {
       logTexto(`${defensor.nome} já está incapacitado.`);
-      
-      // Verifica Tecelão de Carcaças (Malgorr)
-      if (defensor.nome === "Malgorr" && !defensor.habilidades.tecelaoCarcacas.usado && atacante.vida <= 0) {
-        logTexto(`${defensor.nome} ativa Tecelão de Carcaças!`);
-        defensor.vida = Math.floor(defensor.vidaMax * 0.5);
-        defensor.habilidades.tecelaoCarcacas.usado = true;
-        logTexto(`${defensor.nome} ressuscitou com 50% de vida!`);
-      }
-      
       turno++;
       atualizarInterface();
       checarVencedor();
@@ -467,20 +1028,41 @@
 
     // Calcular acerto
     const dadoAcerto = rolarDado(20);
-    const acerto = dadoAcerto + atacante.atributos.velocidade;
+    let acerto = dadoAcerto + atacante.atributos.velocidade;
+    
+    // Bônus de Vantagem Elemental
+    if (atacante.habilidades.vantagemElemental?.ativo) {
+      acerto += 2;
+      logTexto(`Bônus de Vantagem Elemental: +2 no acerto`);
+    }
+    
     const dadoEsquiva = rolarDado(12);
-    const esquiva = dadoEsquiva + defensor.atributos.velocidade;
+    let esquiva = dadoEsquiva + defensor.atributos.velocidade;
+    
+    // Bônus de Frenesi de Esquivas (Mu)
+    if (ehMu(defensor)) {
+      esquiva += defensor.habilidades.frenesiEsquivas.bonusVelocidade;
+      if (defensor.habilidades.frenesiEsquivas.bonusVelocidade > 0) {
+        logTexto(`Bônus de Frenesi de Esquivas: +${defensor.habilidades.frenesiEsquivas.bonusVelocidade} na esquiva`);
+      }
+    }
 
     logTexto(`Rolagem acerto: d20(${dadoAcerto}) + velocidade(${atacante.atributos.velocidade}) = ${acerto}`);
     logTexto(`Rolagem esquiva: d12(${dadoEsquiva}) + velocidade(${defensor.atributos.velocidade}) = ${esquiva}`);
 
     if (acerto > esquiva) {
       // Acertou
-      // Dano = dado d12 * força (físico) ou determinação (mágico) - defesa (simplificado)
       const dadoDano = rolarDado(12);
-
-      // Decide se dano físico ou mágico (exemplo simplificado)
-      let danoBase = dadoDano * atacante.atributos.forca;
+      let danoBase;
+      
+      // Decide se usa força ou inteligência (para magos/tecnomagos)
+      if (atacante.classe.toLowerCase() === "mago" || atacante.classe.toLowerCase() === "tecnomago") {
+        danoBase = dadoDano * atacante.atributos.inteligencia;
+        logTexto(`Dano mágico base: d12(${dadoDano}) * inteligência(${atacante.atributos.inteligencia}) = ${danoBase}`);
+      } else {
+        danoBase = dadoDano * atacante.atributos.forca;
+        logTexto(`Dano físico base: d12(${dadoDano}) * força(${atacante.atributos.forca}) = ${danoBase}`);
+      }
 
       // Aplicar bônus de arma (Rapieira Nobre de Mu)
       if (atacante.nome === "Mu" && atacante.inventario.some(i => i.nome === "Rapieira Nobre")) {
@@ -493,29 +1075,55 @@
       if (atacante.nome === "Samuw Buoynm" && atacante.inventario.some(i => i.nome === "Luvas Solares")) {
         danoBase += 2; // +2 de força das luvas
         logTexto(`Bônus das Luvas Solares: +2 de dano`);
+        
+        // Acumula dano nas luvas
+        const luvas = atacante.inventario.find(i => i.nome === "Luvas Solares");
+        if (luvas) {
+          luvas.danoAcumulado += Math.floor(danoBase / 2);
+          logTexto(`Luvas Solares acumularam ${Math.floor(danoBase / 2)} de dano (Total: ${luvas.danoAcumulado})`);
+        }
       }
 
-      // Aplicar bônus de arma (Adagas Duplas de Adam)
+      // Aplicar bônus de Vantagem Elemental
+      if (atacante.habilidades.vantagemElemental?.ativo) {
+        danoBase += 2;
+        logTexto(`Bônus de Vantagem Elemental: +2 de dano`);
+      }
+
+      // Aplicar bônus de ataque furtivo (Adagas Duplas de Adam)
       if (atacante.nome === "Adam" && atacante.inventario.some(i => i.nome === "Adagas Duplas") && estaInvisivel(atacante)) {
         danoBase = Math.floor(danoBase * 1.3); // 30% a mais de dano
         logTexto(`Ataque furtivo com Adagas Duplas: +30% de dano`);
+        
+        // Aplica veneno (uma vez por batalha)
+        const adagas = atacante.inventario.find(i => i.nome === "Adagas Duplas");
+        if (adagas && !adagas.venenoUsado) {
+          defensor.status.push({ nome: "Envenenado", turnosRestantes: 3 });
+          adagas.venenoUsado = true;
+          logTexto(`${defensor.nome} foi envenenado pelas Adagas Duplas por 3 turnos!`);
+        }
       }
 
-      // Se defensor tiver resistência alta, reduz dano um pouco
+      // Redução por resistência do defensor
       let danoFinal = danoBase - Math.floor(defensor.atributos.resistencia / 2);
+      
+      // Redução por escudo do Catalisador
+      if (temEscudo(defensor)) {
+        danoFinal = Math.floor(danoFinal * 0.5); // 50% de redução
+        logTexto(`Escudo do Catalisador reduziu o dano pela metade!`);
+      }
+      
       if (danoFinal < 0) danoFinal = 0;
 
       defensor.vida -= danoFinal;
+      if (defensor.vida < 0) defensor.vida = 0;
 
       logTexto(`${atacante.nome} acertou o ataque e causou ${danoFinal} de dano em ${defensor.nome}.`);
       
-      // Aplica veneno das Adagas Duplas de Adam (uma vez por batalha)
-      if (atacante.nome === "Adam" && atacante.inventario.some(i => i.nome === "Adagas Duplas") && 
-          !defensor.status.some(s => s.nome === "Envenenado") && 
-          !atacante.habilidades.invisibilidade.usado) {
-        defensor.status.push({ nome: "Envenenado", turnosRestantes: 3 });
-        atacante.habilidades.invisibilidade.usado = true;
-        logTexto(`${defensor.nome} foi envenenado pelas Adagas Duplas por 3 turnos!`);
+      // Atualiza esquivas consecutivas para Mu (reset se levar dano)
+      if (ehMu(defensor)) {
+        defensor.esquivasConsecutivas = 0;
+        defensor.habilidades.frenesiEsquivas.esquivasConsecutivas = 0;
       }
     } else {
       // Errou
@@ -524,12 +1132,15 @@
       // Atualiza esquivas consecutivas para Mu
       if (ehMu(defensor)) {
         defensor.esquivasConsecutivas++;
+        defensor.habilidades.frenesiEsquivas.esquivasConsecutivas++;
         logTexto(`${defensor.nome} esquiva (${defensor.esquivasConsecutivas}/2 para Frenesi de Esquivas)`);
         
         // Verifica Frenesi de Esquivas (passiva de Mu)
         if (defensor.esquivasConsecutivas >= 2) {
           defensor.atributos.velocidade += 1;
+          defensor.habilidades.frenesiEsquivas.bonusVelocidade += 1;
           defensor.esquivasConsecutivas = 0;
+          defensor.habilidades.frenesiEsquivas.esquivasConsecutivas = 0;
           logTexto(`${defensor.nome} ativou Frenesi de Esquivas! +1 de velocidade temporário.`);
         }
       }
@@ -551,7 +1162,6 @@
       document.getElementById("btnTurno").disabled = true;
       document.getElementById("btnUsarHabilidade").disabled = true;
       document.getElementById("btnUsarItem").disabled = true;
-      document.getElementById("btnRoubarItem").disabled = true;
       document.getElementById("btnReiniciar").disabled = false;
     } else if (p2 && p2.vida <= 0 && p1 && p1.vida > 0) {
       logTexto(`\n>>> ${p1.nome} venceu o combate! <<<`);
@@ -559,7 +1169,6 @@
       document.getElementById("btnTurno").disabled = true;
       document.getElementById("btnUsarHabilidade").disabled = true;
       document.getElementById("btnUsarItem").disabled = true;
-      document.getElementById("btnRoubarItem").disabled = true;
       document.getElementById("btnReiniciar").disabled = false;
     } else if (p1 && p1.vida <= 0 && p2 && p2.vida <= 0) {
       logTexto(`\n>>> Empate! Ambos foram incapacitados. <<<`);
@@ -567,7 +1176,6 @@
       document.getElementById("btnTurno").disabled = true;
       document.getElementById("btnUsarHabilidade").disabled = true;
       document.getElementById("btnUsarItem").disabled = true;
-      document.getElementById("btnRoubarItem").disabled = true;
       document.getElementById("btnReiniciar").disabled = false;
     }
   }
@@ -577,141 +1185,13 @@
     if (!combateAtivo) return;
 
     const atacanteKey = turno % 2 === 0 ? "player1" : "player2";
-    const defensorKey = atacanteKey === "player1" ? "player2" : "player1";
     const atacante = estadoJogador[atacanteKey];
-    const defensor = estadoJogador[defensorKey];
-    
     if (!atacante) return;
 
-    // Verifica se é Mu tentando roubar (habilidade especial)
-    if (ehMu(atacante) && confirm(`${atacante.nome} deseja usar Arrastão para tentar roubar um item?`)) {
-      if (atacante.habilidades.arrastao.usos <= 0) {
-        logTexto(`${atacante.nome} não tem mais usos de Arrastão nesta batalha.`);
-        return;
-      }
-
-      const dado = rolarDado(20);
-      logTexto(`${atacante.nome} tenta Arrastão: d20(${dado})`);
-      
-      if (dado >= 11) {
-        // Sucesso no roubo
-        if (defensor.inventario.length > 0) {
-          const itemRoubado = defensor.inventario.shift();
-          atacante.inventario.push(itemRoubado);
-          atacante.habilidades.arrastao.usos--;
-          logTexto(`${atacante.nome} roubou ${itemRoubado.nome} de ${defensor.nome}!`);
-        } else {
-          logTexto(`${defensor.nome} não tem itens para roubar.`);
-        }
-      } else {
-        atacante.habilidades.arrastao.usos--;
-        logTexto(`${atacante.nome} falhou no Arrastão!`);
-      }
-      return;
-    }
-
-    // Pega as habilidades ativas (não passivas)
-    const habilidadesAtivas = Object.keys(atacante.habilidades).filter(k => !atacante.habilidades[k].passiva);
-    if (habilidadesAtivas.length === 0) {
-      logTexto(`${atacante.nome} não possui habilidades ativas.`);
-      return;
-    }
-
-    // Pergunta qual habilidade usar
-    const habNome = prompt(`${atacante.nome} - Escolha uma habilidade:\n${habilidadesAtivas.map(k => atacante.habilidades[k].nome).join("\n")}`);
-    if (!habNome) return;
-
-    const habKey = Object.keys(atacante.habilidades).find(k => atacante.habilidades[k].nome === habNome);
-    if (!habKey) {
-      logTexto("Habilidade não encontrada.");
-      return;
-    }
-
-    const hab = atacante.habilidades[habKey];
-
-    if (hab.cooldown && hab.cooldown > 0) {
-      logTexto(`${hab.nome} está em cooldown por ${hab.cooldown} turnos.`);
-      return;
-    }
-
-    if (hab.usos !== undefined && hab.usos <= 0) {
-      logTexto(`${hab.nome} não tem mais usos disponíveis.`);
-      return;
-    }
-
-    let log = "";
-
-    // Implementação das habilidades específicas
-    switch (habKey) {
-      case "invisibilidade":
-        if (estaInvisivel(atacante)) {
-          logTexto(`${atacante.nome} já está invisível.`);
-          return;
-        }
-        atacante.status.push({ nome: "Invisibilidade", turnosRestantes: 1 });
-        hab.usos--;
-        log = `${atacante.nome} ativou Invisibilidade por 1 turno!`;
-        break;
-
-      case "vantagemElemental":
-        if (hab.ativo) {
-          logTexto(`${atacante.nome} já está com Vantagem Elemental ativa.`);
-          return;
-        }
-        hab.ativo = true;
-        log = `${atacante.nome} ativou Vantagem Elemental! +2 de dano e +2 de velocidade em ambiente ${ambienteAtual}.`;
-        atacante.atributos.velocidade += 2;
-        // O bônus de dano é aplicado no cálculo de dano
-        break;
-
-      case "palmaSanta":
-        if (hab.usos <= 0) {
-          logTexto(`${atacante.nome} não tem mais usos de Palma Santa.`);
-          return;
-        }
-        const cura = Math.floor(atacante.vidaMax * 0.5);
-        atacante.vida += cura;
-        if (atacante.vida > atacante.vidaMax) atacante.vida = atacante.vidaMax;
-        hab.usos--;
-        log = `${atacante.nome} usou Palma Santa e recuperou ${cura} de vida.`;
-        break;
-
-      case "kingMonkey":
-        if (hab.ativo) {
-          logTexto(`${atacante.nome} já está em forma de King Monkey.`);
-          return;
-        }
-        hab.ativo = true;
-        hab.duracao = 2;
-        atacante.atributos.forca += 3;
-        atacante.atributos.resistencia += 3;
-        atacante.atributos.velocidade -= 2;
-        atacante.status.push({ nome: "King Monkey", turnosRestantes: 2 });
-        log = `${atacante.nome} se transformou em King Monkey! +3 força, +3 resistência, -2 velocidade por 2 turnos.`;
-        break;
-
-      case "usarForcaMagica":
-        if (hab.ativo) {
-          logTexto(`${atacante.nome} já está usando Força Mágica.`);
-          return;
-        }
-        hab.ativo = true;
-        hab.duracao = 3;
-        atacante.atributos.inteligencia += 3;
-        atacante.status.push({ nome: "Usar Força Mágica", turnosRestantes: 3 });
-        log = `${atacante.nome} ativou Usar Força Mágica! +3 inteligência por 3 turnos.`;
-        break;
-
-      default:
-        log = `${atacante.nome} tentou usar habilidade ${hab.nome}, mas ela não está implementada.`;
-        break;
-    }
-
-    logTexto(log);
-    atualizarInterface();
+    mostrarDialogoHabilidades(atacante);
   }
 
-  // Usar item do jogador ativo (usa o primeiro item do inventário)
+  // Usar item do jogador ativo
   function usarItemJogador() {
     if (!combateAtivo) return;
 
@@ -719,106 +1199,21 @@
     const jogador = estadoJogador[jogadorKey];
     if (!jogador) return;
 
-    if (jogador.inventario.length === 0) {
-      logTexto(`${jogador.nome} não possui itens para usar.`);
-      return;
-    }
-
-    const item = jogador.inventario[0];
-
-    let log = "";
-
-    switch (item.nome) {
-      case "Catalisador":
-        // Implementação simplificada - escudo após 2 turnos
-        jogador.status.push({ nome: "Preparando Catalisador", turnosRestantes: 2 });
-        log = `${jogador.nome} começou a preparar o Catalisador. Escudo será ativado em 2 turnos.`;
-        jogador.inventario.shift();
-        break;
-      default:
-        log = `${jogador.nome} tentou usar ${item.nome}, mas o efeito não está implementado.`;
-        break;
-    }
-
-    logTexto(log);
-    atualizarInterface();
-  }
-
-  // Roubar item do adversário (apenas para Mu)
-  function roubarItem() {
-    if (!combateAtivo) return;
-
-    const atacanteKey = turno % 2 === 0 ? "player1" : "player2";
-    const defensorKey = atacanteKey === "player1" ? "player2" : "player1";
-
-    const atacante = estadoJogador[atacanteKey];
-    const defensor = estadoJogador[defensorKey];
-
-    if (!ehMu(atacante)) {
-      logTexto("Apenas Mu pode roubar itens usando a habilidade Arrastão.");
-      return;
-    }
-
-    if (atacante.habilidades.arrastao.usos <= 0) {
-      logTexto(`${atacante.nome} não tem mais usos de Arrastão nesta batalha.`);
-      return;
-    }
-
-    if (!defensor || defensor.inventario.length === 0) {
-      logTexto(`${atacante.nome} tentou roubar, mas ${defensor ? defensor.nome : "o adversário"} não tem itens.`);
-      return;
-    }
-
-    const dado = rolarDado(20);
-    logTexto(`${atacante.nome} tenta Arrastão: d20(${dado})`);
-    
-    if (dado >= 11) {
-      const item = defensor.inventario.shift();
-      atacante.inventario.push(item);
-      atacante.habilidades.arrastao.usos--;
-      logTexto(`${atacante.nome} roubou o item ${item.nome} de ${defensor.nome}!`);
-    } else {
-      atacante.habilidades.arrastao.usos--;
-      logTexto(`${atacante.nome} falhou no Arrastão!`);
-    }
-    
-    atualizarInterface();
-  }
-
-  // Atualiza cooldowns e duração de habilidades por turno
-  function atualizarCooldowns(jogador) {
-    for (const key in jogador.habilidades) {
-      let hab = jogador.habilidades[key];
-
-      if (hab.cooldown && hab.cooldown > 0) {
-        hab.cooldown--;
-        if (hab.cooldown < 0) hab.cooldown = 0;
-      }
-
-      if (hab.duracao && hab.duracao > 0) {
-        hab.duracao--;
-        if (hab.duracao <= 0) {
-          // Reverte bônus temporários se existirem
-          if (key === "kingMonkey" && hab.ativo) {
-            jogador.atributos.forca -= 3;
-            jogador.atributos.resistencia -= 3;
-            jogador.atributos.velocidade += 2;
-            hab.ativo = false;
-          }
-          else if (key === "vantagemElemental" && hab.ativo) {
-            jogador.atributos.velocidade -= 2;
-            hab.ativo = false;
-          }
-          hab.duracao = 0;
-        }
-      }
-    }
+    mostrarDialogoItens(jogador);
   }
 
   // Inicializa selects com personagens
   function inicializarSelects() {
     const sel1 = document.getElementById("selPlayer1");
     const sel2 = document.getElementById("selPlayer2");
+    const selAmbiente = document.getElementById("selAmbiente");
+    
+    // Limpa selects
+    sel1.innerHTML = '';
+    sel2.innerHTML = '';
+    selAmbiente.innerHTML = '';
+    
+    // Preenche personagens
     for (const chave in personagensBase) {
       const opt1 = document.createElement("option");
       opt1.value = chave;
@@ -830,14 +1225,24 @@
       opt2.text = personagensBase[chave].nome;
       sel2.appendChild(opt2);
     }
+    
+    // Preenche ambientes
+    for (const amb in ambientes) {
+      const opt = document.createElement("option");
+      opt.value = amb;
+      opt.text = ambientes[amb].nome;
+      selAmbiente.appendChild(opt);
+    }
   }
 
   // Iniciar combate com personagens selecionados
   function iniciarCombate() {
     const sel1 = document.getElementById("selPlayer1");
     const sel2 = document.getElementById("selPlayer2");
+    const selAmbiente = document.getElementById("selAmbiente");
     const chave1 = sel1.value;
     const chave2 = sel2.value;
+    ambienteAtual = selAmbiente.value;
 
     if (chave1 === chave2) {
       alert("Escolha personagens diferentes para os jogadores.");
@@ -846,6 +1251,10 @@
 
     estadoJogador.player1 = criarPersonagem(chave1);
     estadoJogador.player2 = criarPersonagem(chave2);
+    
+    // Aplica bônus do ambiente
+    aplicarBonusAmbiente(estadoJogador.player1);
+    aplicarBonusAmbiente(estadoJogador.player2);
 
     turno = 0;
     combateAtivo = true;
@@ -853,13 +1262,13 @@
     document.getElementById("btnTurno").disabled = false;
     document.getElementById("btnUsarHabilidade").disabled = false;
     document.getElementById("btnUsarItem").disabled = false;
-    document.getElementById("btnRoubarItem").disabled = false;
     document.getElementById("btnReiniciar").disabled = false;
     document.getElementById("btnIniciar").disabled = true;
 
     document.getElementById("log").innerText = "";
     logTexto("Combate iniciado entre:");
     logTexto(`${estadoJogador.player1.nome} (Jogador 1) VS ${estadoJogador.player2.nome} (Jogador 2)\n`);
+    logTexto(`Ambiente: ${ambientes[ambienteAtual].nome}\n`);
     atualizarInterface();
   }
 
@@ -873,7 +1282,6 @@
     document.getElementById("btnTurno").disabled = true;
     document.getElementById("btnUsarHabilidade").disabled = true;
     document.getElementById("btnUsarItem").disabled = true;
-    document.getElementById("btnRoubarItem").disabled = true;
     document.getElementById("btnReiniciar").disabled = true;
     document.getElementById("btnIniciar").disabled = false;
 
@@ -889,7 +1297,6 @@
   document.getElementById("btnTurno").onclick = realizarTurno;
   document.getElementById("btnUsarHabilidade").onclick = usarHabilidadeJogador;
   document.getElementById("btnUsarItem").onclick = usarItemJogador;
-  document.getElementById("btnRoubarItem").onclick = roubarItem;
   document.getElementById("btnReiniciar").onclick = reiniciar;
 
 })();
